@@ -2,7 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let ai: GoogleGenAI | null = null;
+try {
+  if (process.env.GEMINI_API_KEY) {
+    ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+} catch (e) {
+  console.warn("Failed to initialize GoogleGenAI:", e);
+}
 
 type Message = {
   id: string;
@@ -21,7 +28,7 @@ export function ChatBot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!chatRef.current) {
+    if (!chatRef.current && ai) {
       chatRef.current = ai.chats.create({
         model: "gemini-3-flash-preview",
         config: {
@@ -41,6 +48,12 @@ export function ChatBot() {
     const userText = input.trim();
     setInput('');
     setMessages(prev => [...prev, { id: Date.now().toString(), text: userText, sender: 'user' }]);
+    
+    if (!ai || !chatRef.current) {
+      setMessages(prev => [...prev, { id: Date.now().toString(), text: "Chat is currently unavailable (missing API key). Please contact us on WhatsApp.", sender: 'bot' }]);
+      return;
+    }
+
     setIsLoading(true);
 
     try {

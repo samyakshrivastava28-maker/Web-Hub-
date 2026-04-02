@@ -11,7 +11,7 @@ import {
   MessageCircle, ArrowRight, Mail, Phone, MapPin, Instagram, MessageSquare
 } from 'lucide-react';
 
-const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) => (
+const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string, key?: React.Key }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
