@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ChatBot } from './components/ChatBot';
-import { auth, googleProvider, db } from './firebase';
-import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, addDoc } from 'firebase/firestore';
+import { db } from './firebase';
+import { collection, addDoc } from 'firebase/firestore';
 import {
   Menu, X, Monitor, ShoppingCart, Layout, RefreshCw,
   Zap, IndianRupee, Smartphone, Search, CheckCircle2,
@@ -23,152 +22,9 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
   </motion.div>
 );
 
-export function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleLogin = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          role: 'client',
-          createdAt: new Date().toISOString()
-        });
-      }
-    } catch (error) {
-      console.error("Error signing in:", error);
-      alert("Failed to sign in. Please try again.");
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white -z-10" />
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[800px] h-[800px] bg-blue-100/50 rounded-full blur-3xl -z-10" />
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 text-center border border-slate-100 relative z-10"
-        >
-          <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-4xl shadow-lg mx-auto mb-8 transform -rotate-6">
-            S
-          </div>
-          <h1 className="text-3xl font-extrabold text-slate-900 mb-3 tracking-tight">S-Web Hub</h1>
-          <p className="text-slate-500 mb-10 text-lg">Please sign in or log in to access the platform.</p>
-          
-          <div className="space-y-4">
-            <button 
-              onClick={handleLogin}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-3 text-lg"
-            >
-              Sign In
-            </button>
-            <button 
-              onClick={handleLogin}
-              className="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold py-4 px-4 rounded-xl transition-all border-2 border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 flex items-center justify-center gap-3 text-lg"
-            >
-              Log In
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
-}
-
 export function AppLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const location = useLocation();
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleLogin = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      
-      // Check if user exists in Firestore, if not create profile
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          role: 'client',
-          createdAt: new Date().toISOString()
-        });
-        
-        // Notify admin via Email about new signup using FormSubmit
-        try {
-          await fetch("https://formsubmit.co/ajax/webhub2811@gmail.com", {
-            method: "POST",
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                _subject: "New User Signup on S-Web Hub!",
-                Name: user.displayName || 'Unknown',
-                Email: user.email,
-                Message: `A new user has just signed up on your website.\n\nName: ${user.displayName || 'Unknown'}\nEmail: ${user.email}`
-            })
-          });
-        } catch (e) {
-          console.error("Failed to send email notification", e);
-        }
-      }
-    } catch (error) {
-      console.error("Error signing in:", error);
-      alert("Failed to sign in. Please try again.");
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
 
   const navLinks = [
     { name: 'Services', href: '/#services' },
@@ -207,26 +63,6 @@ export function AppLayout() {
                   {link.name}
                 </a>
               ))}
-              {user ? (
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-slate-200" referrerPolicy="no-referrer" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-                        {user.displayName?.charAt(0) || user.email?.charAt(0)}
-                      </div>
-                    )}
-                  </div>
-                  <button onClick={handleLogout} className="text-sm text-slate-600 hover:text-red-600 font-medium transition-colors">
-                    Logout
-                  </button>
-                </div>
-              ) : (
-                <button onClick={handleLogin} className="text-sm text-slate-600 hover:text-blue-600 font-medium transition-colors">
-                  Client Login
-                </button>
-              )}
               <a href="/#contact" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-sm font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                 Get Started
               </a>
@@ -259,36 +95,6 @@ export function AppLayout() {
                   {link.name}
                 </a>
               ))}
-              {user ? (
-                <>
-                  <div className="px-3 py-3 flex items-center gap-3 border-t border-slate-100 mt-2 pt-4">
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="Profile" className="w-10 h-10 rounded-full" referrerPolicy="no-referrer" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-                        {user.displayName?.charAt(0) || user.email?.charAt(0)}
-                      </div>
-                    )}
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-slate-900">{user.displayName}</span>
-                      <span className="text-xs text-slate-500">{user.email}</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => { handleLogout(); setIsMenuOpen(false); }}
-                    className="block w-full text-left px-3 py-3 rounded-md text-sm font-medium text-red-600 hover:bg-red-50"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => { handleLogin(); setIsMenuOpen(false); }}
-                  className="block w-full text-left px-3 py-3 rounded-md text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50"
-                >
-                  Client Login
-                </button>
-              )}
               <a
                 href="/#contact"
                 onClick={() => setIsMenuOpen(false)}
