@@ -32,7 +32,7 @@ export function ChatBot() {
       chatRef.current = ai.chats.create({
         model: "gemini-3-flash-preview",
         config: {
-          systemInstruction: "You are a helpful customer support assistant for S-Web Hub, a web development agency in India. You build affordable, fast, and modern websites for small businesses. Prices: Starter (₹2499), Growth (₹4999), Premium (₹9999). Contact: WhatsApp +918305500767, Email shrishikhar184@gmail.com. Be concise, friendly, and helpful. Keep responses relatively short and conversational.",
+          systemInstruction: "You are a helpful customer support assistant for S-Web Hub, a web development agency in India. You build affordable, fast, and modern websites for small businesses. Prices: Starter (₹2499), Growth (₹4999), Premium (₹9999). Contact: WhatsApp +918305500767, Email webhub2811@gmail.com. Be concise, friendly, and helpful. Keep responses relatively short and conversational.",
         }
       });
     }

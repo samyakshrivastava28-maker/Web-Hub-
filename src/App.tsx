@@ -136,6 +136,25 @@ export function AppLayout() {
           role: 'client',
           createdAt: new Date().toISOString()
         });
+        
+        // Notify admin via Email about new signup using FormSubmit
+        try {
+          await fetch("https://formsubmit.co/ajax/webhub2811@gmail.com", {
+            method: "POST",
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                _subject: "New User Signup on S-Web Hub!",
+                Name: user.displayName || 'Unknown',
+                Email: user.email,
+                Message: `A new user has just signed up on your website.\n\nName: ${user.displayName || 'Unknown'}\nEmail: ${user.email}`
+            })
+          });
+        } catch (e) {
+          console.error("Failed to send email notification", e);
+        }
       }
     } catch (error) {
       console.error("Error signing in:", error);
@@ -690,7 +709,7 @@ export function AppHome() {
                       </div>
                     </a>
                     <a 
-                      href="https://mail.google.com/mail/?view=cm&fs=1&to=shrishikhar184@gmail.com" 
+                      href="https://mail.google.com/mail/?view=cm&fs=1&to=webhub2811@gmail.com" 
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-4 hover:opacity-80 transition-opacity"
@@ -700,7 +719,7 @@ export function AppHome() {
                       </div>
                       <div>
                         <p className="text-blue-200 text-sm">Email us</p>
-                        <p className="font-semibold text-lg">shrishikhar184@gmail.com</p>
+                        <p className="font-semibold text-lg">webhub2811@gmail.com</p>
                       </div>
                     </a>
                     <a 
