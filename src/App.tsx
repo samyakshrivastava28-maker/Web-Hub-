@@ -155,7 +155,7 @@ export function AppLayout() {
                 Empowering small businesses in India with affordable, fast, and stunning websites. Get online in 24 hours.
               </p>
               <div className="flex gap-4">
-                <a href="https://www.instagram.com/s_web_hub/?hl=en" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all">
+                <a href="https://www.instagram.com/webhub2811/?hl=en" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all">
                   <Instagram size={20} />
                 </a>
               </div>
@@ -603,7 +603,7 @@ export function AppHome() {
                       </div>
                     </a>
                     <a 
-                      href="https://www.instagram.com/s_web_hub/?hl=en" 
+                      href="https://www.instagram.com/webhub2811/?hl=en" 
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-4 hover:opacity-80 transition-opacity"
@@ -613,7 +613,7 @@ export function AppHome() {
                       </div>
                       <div>
                         <p className="text-blue-200 text-sm">Follow us</p>
-                        <p className="font-semibold text-lg">@s_web_hub</p>
+                        <p className="font-semibold text-lg">@webhub2811</p>
                       </div>
                     </a>
                   </div>
