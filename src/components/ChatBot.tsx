@@ -72,7 +72,7 @@ export function ChatBot() {
       {/* Chat Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-blue-700 transition-transform hover:scale-110 z-50 ${isOpen ? 'hidden' : 'flex'}`}
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-blue-700 transition-transform hover:scale-110 z-50 ${isOpen ? 'hidden' : 'flex'}`}
         aria-label="Open chat"
       >
         <MessageCircle size={28} />
@@ -80,15 +80,15 @@ export function ChatBot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-[350px] h-[500px] max-h-[80vh] bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden border border-slate-200">
+        <div className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 w-[calc(100vw-2rem)] sm:w-[350px] h-[450px] max-h-[75vh] bg-white rounded-2xl shadow-2xl flex flex-col z-[100] overflow-hidden border border-slate-200">
           {/* Header */}
-          <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
+          <div className="bg-blue-600 text-white p-4 flex justify-between items-center shadow-md z-10">
             <div>
               <h3 className="font-bold">S-Web Hub Assistant</h3>
               <p className="text-blue-100 text-xs">Online</p>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-blue-100 hover:text-white transition-colors">
-              <X size={20} />
+            <button onClick={() => setIsOpen(false)} className="text-blue-100 hover:text-white transition-colors p-1">
+              <X size={24} />
             </button>
           </div>
 

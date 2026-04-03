@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ChatBot } from './components/ChatBot';
 import { db } from './firebase';
@@ -7,7 +7,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import {
   Menu, X, Monitor, ShoppingCart, Layout, RefreshCw,
   Zap, IndianRupee, Smartphone, Search, CheckCircle2,
-  MessageCircle, ArrowRight, Mail, Phone, MapPin, Instagram, MessageSquare
+  MessageCircle, ArrowRight, Mail, Phone, MapPin, Instagram, MessageSquare, ChevronDown
 } from 'lucide-react';
 
 const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string, key?: React.Key }) => (
@@ -21,6 +21,26 @@ const FadeIn = ({ children, delay = 0, className = "" }: { children: React.React
     {children}
   </motion.div>
 );
+
+const FAQItem = ({ question, answer }: { question: string, answer: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border-b border-slate-200 py-4 last:border-0">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="flex w-full justify-between items-center text-left font-semibold text-slate-900 focus:outline-none"
+      >
+        <span className="pr-4">{question}</span>
+        <ChevronDown className={`transform transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} size={20} />
+      </button>
+      {isOpen && (
+        <div className="mt-4 text-slate-600 leading-relaxed">
+          {answer}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export function AppLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -82,29 +102,36 @@ export function AppLayout() {
         </div>
 
         {/* Dropdown Nav (Visible on all screens when open) */}
-        {isMenuOpen && (
-          <div className="bg-white border-b border-slate-200 shadow-lg absolute w-full">
-            <div className="px-4 pt-2 pb-6 space-y-2">
-              {navLinks.map((link) => (
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-white border-b border-slate-200 shadow-lg absolute w-full overflow-hidden"
+            >
+              <div className="px-4 pt-2 pb-6 space-y-2">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block px-3 py-3 rounded-md text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50"
+                  >
+                    {link.name}
+                  </a>
+                ))}
                 <a
-                  key={link.name}
-                  href={link.href}
+                  href="/#contact"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block px-3 py-3 rounded-md text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50"
+                  className="block w-full text-center mt-4 bg-blue-600 text-white px-4 py-3 rounded-md text-sm font-medium"
                 >
-                  {link.name}
+                  Get Started
                 </a>
-              ))}
-              <a
-                href="/#contact"
-                onClick={() => setIsMenuOpen(false)}
-                className="block w-full text-center mt-4 bg-blue-600 text-white px-4 py-3 rounded-md text-sm font-medium"
-              >
-                Get Started
-              </a>
-            </div>
-          </div>
-        )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       <main>
@@ -262,28 +289,43 @@ export function AppHome() {
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
+            }}
             className="max-w-4xl mx-auto"
           >
-            <span className="inline-block py-1 px-3 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm mb-6 border border-blue-200">
+            <motion.span 
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              className="inline-block py-1 px-3 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm mb-6 border border-blue-200"
+            >
               🚀 Empowering Indian Small Businesses
-            </span>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight mb-8 leading-tight">
+            </motion.span>
+            <motion.h1 
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight mb-8 leading-tight"
+            >
               Get Your Business Online in <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-400">24 Hours</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+            </motion.h1>
+            <motion.p 
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              className="text-xl md:text-2xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed"
+            >
               Fast, affordable, and stunning websites tailored for startups and local businesses. Start your digital journey today.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a href="#pricing" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-lg shadow-blue-600/30 hover:shadow-xl hover:-translate-y-1 flex items-center justify-center gap-2">
+            </motion.p>
+            <motion.div 
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
+              <motion.a whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} href="#pricing" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
                 View Pricing <ArrowRight size={20} />
-              </a>
-              <a href="#portfolio" className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center">
+              </motion.a>
+              <motion.a whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} href="#portfolio" className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-sm flex items-center justify-center">
                 See Our Work
-              </a>
-            </div>
+              </motion.a>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -302,13 +344,13 @@ export function AppHome() {
               { icon: RefreshCw, title: 'Redesign', desc: 'Give your old, outdated website a modern and fresh look.' },
             ].map((service, index) => (
               <FadeIn key={index} delay={index * 0.1}>
-                <div className="bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:border-blue-200 hover:shadow-xl transition-all duration-300 group h-full">
+                <motion.div whileHover={{ y: -8 }} className="bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:border-blue-200 hover:shadow-xl transition-all duration-300 group h-full">
                   <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform">
                     <service.icon size={28} />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-3">{service.title}</h3>
                   <p className="text-slate-600 leading-relaxed">{service.desc}</p>
-                </div>
+                </motion.div>
               </FadeIn>
             ))}
           </div>
@@ -369,7 +411,7 @@ export function AppHome() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Starter Plan */}
             <FadeIn delay={0.1}>
-              <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-shadow h-full flex flex-col">
+              <motion.div whileHover={{ y: -8 }} className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all h-full flex flex-col">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Starter</h3>
                 <p className="text-slate-500 text-sm mb-6">Perfect for small local businesses.</p>
                 <div className="mb-6">
@@ -389,12 +431,12 @@ export function AppHome() {
                 >
                   Buy Starter Plan
                 </button>
-              </div>
+              </motion.div>
             </FadeIn>
 
             {/* Growth Plan */}
             <FadeIn delay={0.2}>
-              <div className="bg-blue-600 rounded-3xl p-8 border border-blue-500 shadow-2xl shadow-blue-600/20 transform md:-translate-y-4 h-full flex flex-col relative">
+              <motion.div whileHover={{ y: -8 }} className="bg-blue-600 rounded-3xl p-8 border border-blue-500 shadow-2xl shadow-blue-600/20 transform md:-translate-y-4 hover:-translate-y-6 transition-all h-full flex flex-col relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-400 to-blue-300 text-blue-900 text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
                   Most Popular
                 </div>
@@ -417,12 +459,12 @@ export function AppHome() {
                 >
                   Buy Growth Plan
                 </button>
-              </div>
+              </motion.div>
             </FadeIn>
 
             {/* Premium Plan */}
             <FadeIn delay={0.3}>
-              <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-shadow h-full flex flex-col">
+              <motion.div whileHover={{ y: -8 }} className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all h-full flex flex-col">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Premium</h3>
                 <p className="text-slate-500 text-sm mb-6">For established businesses needing more.</p>
                 <div className="mb-6">
@@ -442,7 +484,7 @@ export function AppHome() {
                 >
                   Buy Premium Plan
                 </button>
-              </div>
+              </motion.div>
             </FadeIn>
           </div>
         </div>
@@ -485,6 +527,38 @@ export function AppHome() {
               </FadeIn>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 bg-slate-50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeIn className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Frequently Asked Questions</h2>
+            <p className="text-lg text-slate-600">Got questions? We've got answers.</p>
+          </FadeIn>
+          <FadeIn delay={0.1} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+            <FAQItem 
+              question="How much does a website cost?" 
+              answer="Our pricing is highly affordable for small businesses in India. Our Starter plan begins at just ₹2,499, which includes a single-page responsive website. We also have Growth (₹4,999) and Premium (₹9,999) plans for more advanced needs." 
+            />
+            <FAQItem 
+              question="How long does it take to build a website?" 
+              answer="We pride ourselves on speed! For our Starter and Growth plans, we can typically get your website designed, built, and live in about 48 hours. For our Premium plan, it takes about 5 to 7 days after receiving your content and requirements." 
+            />
+            <FAQItem 
+              question="Where are you located?" 
+              answer="We are proudly based in Chhattisgarh, India, but we work with clients all over the country to help them establish a strong online presence." 
+            />
+            <FAQItem 
+              question="Do I need to pay for hosting and domain separately?" 
+              answer="Our plans cover the design and development of your website. We can guide you on the best and most affordable hosting and domain providers, and we'll handle the technical setup for you completely free of charge!" 
+            />
+            <FAQItem 
+              question="Will my website work on mobile phones?" 
+              answer="Absolutely! Every website we build is 100% mobile-responsive, meaning it will look perfect and function smoothly on smartphones, tablets, and desktop computers." 
+            />
+          </FadeIn>
         </div>
       </section>
 
@@ -546,15 +620,16 @@ export function AppHome() {
                 </div>
 
                 <div>
-                  <a 
+                  <motion.a 
+                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                     href="https://wa.me/918305500767?text=Hi%20S-Web%20Hub,%20I%20need%20a%20website!" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:-translate-y-1"
+                    className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg"
                   >
                     <MessageCircle size={24} />
                     Chat on WhatsApp
-                  </a>
+                  </motion.a>
                 </div>
               </div>
 
