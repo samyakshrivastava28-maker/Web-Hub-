@@ -7,7 +7,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import {
   Menu, X, Monitor, ShoppingCart, Layout, RefreshCw,
   Zap, IndianRupee, Smartphone, Search, CheckCircle2,
-  MessageCircle, ArrowRight, Mail, Phone, MapPin, Instagram, MessageSquare, ChevronDown
+  MessageCircle, ArrowRight, Mail, Phone, MapPin, Instagram, MessageSquare, ChevronDown, MousePointerClick
 } from 'lucide-react';
 
 const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string, key?: React.Key }) => (
@@ -177,6 +177,15 @@ export function AppLayout() {
         </div>
       </footer>
       
+      {/* Mobile Floating Call Button */}
+      <a
+        href="tel:+918305500767"
+        className="fixed bottom-4 left-4 sm:hidden w-14 h-14 bg-green-500 text-white rounded-full shadow-2xl flex items-center justify-center hover:bg-green-600 transition-transform hover:scale-110 z-50"
+        aria-label="Call us"
+      >
+        <Phone size={28} />
+      </a>
+
       {/* AI Chat Bot */}
       <ChatBot />
     </div>
@@ -418,7 +427,7 @@ export function AppHome() {
                   <span className="text-4xl font-extrabold text-slate-900">₹2,499</span>
                 </div>
                 <ul className="space-y-4 mb-8 flex-grow">
-                  {['Single Page Website', 'Mobile Responsive', 'Contact Form', 'WhatsApp Integration', 'Basic SEO Setup'].map((feature, i) => (
+                  {['Single Page Website', 'Mobile Responsive', 'Contact Form', 'WhatsApp Integration', 'Basic SEO Setup', 'Free Chatbot for 24x7 Interaction'].map((feature, i) => (
                     <li key={i} className="flex items-center gap-3 text-slate-700">
                       <CheckCircle2 size={20} className="text-blue-500 flex-shrink-0" />
                       <span>{feature}</span>
@@ -431,6 +440,9 @@ export function AppHome() {
                 >
                   Buy Starter Plan
                 </button>
+                <a href="#example-starter" className="block text-center text-blue-600 font-semibold mt-4 hover:underline text-sm">
+                  View Example Website
+                </a>
               </motion.div>
             </FadeIn>
 
@@ -446,7 +458,7 @@ export function AppHome() {
                   <span className="text-4xl font-extrabold text-white">₹4,999</span>
                 </div>
                 <ul className="space-y-4 mb-8 flex-grow">
-                  {['Up to 5 Pages', 'Premium Design', 'Mobile Responsive', 'Advanced SEO Setup', 'Social Media Integration', '1 Month Free Support'].map((feature, i) => (
+                  {['Up to 5 Pages', 'Premium Design', 'Mobile Responsive', 'Advanced SEO Setup', 'Social Media Integration', '1 Month Free Support', 'Free Chatbot for 24x7 Interaction'].map((feature, i) => (
                     <li key={i} className="flex items-center gap-3 text-white">
                       <CheckCircle2 size={20} className="text-blue-300 flex-shrink-0" />
                       <span>{feature}</span>
@@ -459,6 +471,9 @@ export function AppHome() {
                 >
                   Buy Growth Plan
                 </button>
+                <a href="#example-growth" className="block text-center text-blue-200 font-semibold mt-4 hover:text-white hover:underline text-sm">
+                  View Example Website
+                </a>
               </motion.div>
             </FadeIn>
 
@@ -471,7 +486,7 @@ export function AppHome() {
                   <span className="text-4xl font-extrabold text-slate-900">₹9,999</span>
                 </div>
                 <ul className="space-y-4 mb-8 flex-grow">
-                  {['Up to 15 Pages', 'Custom Animations', 'Admin Dashboard', 'Content Management', 'Advanced Analytics', '3 Months Free Support'].map((feature, i) => (
+                  {['Up to 15 Pages', 'Custom Animations', 'Admin Dashboard', 'Content Management', 'Advanced Analytics', '3 Months Free Support', 'Free Chatbot for 24x7 Interaction'].map((feature, i) => (
                     <li key={i} className="flex items-center gap-3 text-slate-700">
                       <CheckCircle2 size={20} className="text-blue-500 flex-shrink-0" />
                       <span>{feature}</span>
@@ -484,6 +499,9 @@ export function AppHome() {
                 >
                   Buy Premium Plan
                 </button>
+                <a href="#example-premium" className="block text-center text-blue-600 font-semibold mt-4 hover:underline text-sm">
+                  View Example Website
+                </a>
               </motion.div>
             </FadeIn>
           </div>
@@ -505,12 +523,12 @@ export function AppHome() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { img: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=600&h=450', title: 'Local Cafe Single Page', category: 'Starter Plan Example', link: '/cafe' },
-              { img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600&h=450', title: 'Tech Startup Website', category: 'Growth Plan Example', link: '/tech' },
-              { img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600&h=450', title: 'Corporate Portal', category: 'Premium Plan Example', link: '/premium' },
+              { id: 'example-starter', img: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=600&h=450', title: 'Local Cafe Single Page', category: 'Starter Plan Example', link: '/cafe' },
+              { id: 'example-growth', img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600&h=450', title: 'Tech Startup Website', category: 'Growth Plan Example', link: '/tech' },
+              { id: 'example-premium', img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600&h=450', title: 'Corporate Portal', category: 'Premium Plan Example', link: '/premium' },
             ].map((item, index) => (
               <FadeIn key={index} delay={index * 0.1}>
-                <a href={item.link} target="_blank" rel="noopener noreferrer" className="group rounded-2xl overflow-hidden cursor-pointer block">
+                <a id={item.id} href={item.link} target="_blank" rel="noopener noreferrer" className="group rounded-2xl overflow-hidden cursor-pointer block scroll-mt-24">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img 
                       src={item.img} 
@@ -518,8 +536,13 @@ export function AppHome() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       referrerPolicy="no-referrer"
                     />
+                    <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg font-bold text-sm border border-slate-700 shadow-lg z-10">
+                      {item.category}
+                    </div>
+                    <div className="absolute top-4 right-4 bg-blue-600/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full font-bold text-xs shadow-lg z-10 flex items-center gap-1 animate-pulse">
+                      Tap it <MousePointerClick size={14} />
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                      <span className="text-blue-400 font-medium text-sm mb-1">{item.category}</span>
                       <h3 className="text-white font-bold text-xl">{item.title}</h3>
                     </div>
                   </div>
@@ -577,14 +600,14 @@ export function AppHome() {
                   
                   <div className="space-y-6 mb-12">
                     <a 
-                      href="sms:+918305500767" 
+                      href="tel:+918305500767" 
                       className="flex items-center gap-4 hover:opacity-80 transition-opacity"
                     >
                       <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <MessageSquare size={24} />
+                        <Phone size={24} />
                       </div>
                       <div>
-                        <p className="text-blue-200 text-sm">Text us</p>
+                        <p className="text-blue-200 text-sm">Call us</p>
                         <p className="font-semibold text-lg">+91 83055 00767</p>
                       </div>
                     </a>
