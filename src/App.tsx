@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ChatBot } from './components/ChatBot';
@@ -11,15 +13,14 @@ import {
 } from 'lucide-react';
 
 const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string, key?: React.Key }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-50px" }}
-    transition={{ duration: 0.5, delay }}
+  <div
+    data-aos="fade-up"
+    data-aos-delay={delay * 1000}
+    data-aos-offset="50"
     className={className}
   >
     {children}
-  </motion.div>
+  </div>
 );
 
 const FAQItem = ({ question, answer }: { question: string, answer: string }) => {
@@ -45,6 +46,14 @@ const FAQItem = ({ question, answer }: { question: string, answer: string }) => 
 export function AppLayout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic'
+    });
+  }, []);
 
   const navLinks = [
     { name: 'Services', href: '/#services' },
@@ -396,11 +405,11 @@ export function AppHome() {
               </div>
             </FadeIn>
             <FadeIn delay={0.2} className="relative">
-              <div className="aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
+              <div className="aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-700 bg-white">
                 <img 
-                  src="https://picsum.photos/seed/workspace/800/600" 
-                  alt="Modern workspace" 
-                  className="w-full h-full object-cover"
+                  src="https://www.digitalpiloto.com/web-development-company-in-india/images/best-web-development-company-in-india.webp" 
+                  alt="Web Development Process" 
+                  className="w-full h-full object-contain"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -523,9 +532,11 @@ export function AppHome() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { id: 'example-starter', img: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=600&h=450', title: 'Local Cafe Single Page', category: 'Starter Plan Example', link: '/cafe' },
-              { id: 'example-growth', img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600&h=450', title: 'Tech Startup Website', category: 'Growth Plan Example', link: '/tech' },
-              { id: 'example-premium', img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600&h=450', title: 'Corporate Portal', category: 'Premium Plan Example', link: '/premium' },
+              { id: 'example-starter', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&q=80&w=600&h=450', title: 'The Grand Dhaba', category: 'Starter Plan Example', link: 'https://example-granddhaba.netlify.app/' },
+              { id: 'example-growth', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600&h=450', title: 'Wellness Gym', category: 'Growth Plan Example', link: 'https://example-wellnessgym.netlify.app/' },
+              { id: 'example-premium', img: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=600&h=450', title: 'S Jewellry', category: 'Premium Plan Example', link: 'https://example-sjewelers.netlify.app/' },
+              { id: 'example-restaurant', img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=600&h=450', title: 'Fine Dining Restaurant', category: 'Restaurant Website Example', link: 'https://example-masalaandco.netlify.app/' },
+              { id: 'example-clinic', img: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600&h=450', title: 'HealthFirst Clinic', category: 'Doctor Clinic Example', link: 'https://example-aura-clinic.netlify.app/' },
             ].map((item, index) => (
               <FadeIn key={index} delay={index * 0.1}>
                 <a id={item.id} href={item.link} target="_blank" rel="noopener noreferrer" className="group rounded-2xl overflow-hidden cursor-pointer block scroll-mt-24">
