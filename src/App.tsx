@@ -66,10 +66,8 @@ export function AppLayout() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <Link to="/" className="flex-shrink-0 flex items-center gap-2">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md">
-                S
-              </div>
+            <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
+              <img src="/logo.svg" alt="S-Web Hub Logo" className="w-10 h-10 rounded-lg shadow-md group-hover:scale-110 transition-transform" />
               <span className="font-bold text-2xl tracking-tight text-slate-900">
                 S-Web <span className="text-blue-600">Hub</span>
               </span>
@@ -143,9 +141,7 @@ export function AppLayout() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center text-white font-bold text-lg">
-                  S
-                </div>
+                <img src="/logo.svg" alt="S-Web Hub Logo" className="w-8 h-8 rounded-md" />
                 <span className="font-bold text-xl text-white">
                   S-Web <span className="text-blue-500">Hub</span>
                 </span>
@@ -228,13 +224,13 @@ export function AppHome() {
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight mb-8 leading-tight"
             >
-              Get Your Business Online in <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-400">24 Hours</span>
+              Get Your Business <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-400">Website</span> Online in 24 Hours
             </motion.h1>
             <motion.p 
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
               className="text-xl md:text-2xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed"
             >
-              Fast, affordable, and stunning websites tailored for startups and local businesses. Start your digital journey today.
+              Fast, affordable, and stunning web design and website development tailored for startups and local businesses. Elevate your presence on the web today.
             </motion.p>
             <motion.div 
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
