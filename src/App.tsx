@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ChatBot } from './components/ChatBot';
-import { db } from './firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { FeedbackSection } from './components/FeedbackSection';
 import {
   Menu, X, Monitor, ShoppingCart, Layout, RefreshCw,
   Zap, IndianRupee, Smartphone, Search, CheckCircle2,
@@ -56,14 +55,13 @@ export function AppLayout() {
   }, []);
 
   const navLinks = [
-    { name: 'Services', href: '/#services' },
-    { name: 'Benefits', href: '/#benefits' },
-    { name: 'Pricing', href: '/#pricing' },
-    { name: 'Portfolio', href: '/#portfolio' },
+    { name: 'Home', href: '/' },
+    { name: 'Our Work', href: '/our-work' },
+    { name: 'Contact', href: '/contact' },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden flex flex-col relative w-full">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,28 +75,27 @@ export function AppLayout() {
               </span>
             </Link>
             
-            {/* Desktop Nav - Hidden, using hamburger for all screens */}
-            <div className="hidden items-center space-x-8">
+            {/* Desktop Nav */}
+            <div className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
-                <a 
+                <Link 
                   key={link.name} 
-                  href={link.href} 
-                  className={`text-sm font-medium transition-colors ${
-                    (location.pathname === '/' && link.href === '/') || location.hash === link.href.replace('/', '')
+                  to={link.href} 
+                  className={`text-base font-semibold transition-colors ${
+                    (location.pathname === '/' && link.href === '/') ||
+                    (location.pathname === '/' && location.hash === link.href.replace('/', '')) || 
+                    (location.pathname === link.href && link.href !== '/')
                       ? 'text-blue-600' 
                       : 'text-slate-600 hover:text-blue-600'
                   }`}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
-              <a href="/#contact" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-sm font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                Get Started
-              </a>
             </div>
 
-            {/* Menu button (Visible on all screens) */}
-            <div className="flex items-center">
+            {/* Menu button (Visible on mobile) */}
+            <div className="flex items-center md:hidden">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="text-slate-600 hover:text-blue-600 focus:outline-none p-2"
@@ -121,22 +118,15 @@ export function AppLayout() {
             >
               <div className="px-4 pt-2 pb-6 space-y-2">
                 {navLinks.map((link) => (
-                  <a
+                  <Link
                     key={link.name}
-                    href={link.href}
+                    to={link.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="block px-3 py-3 rounded-md text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50"
+                    className="block px-3 py-3 rounded-md text-base font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 ))}
-                <a
-                  href="/#contact"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block w-full text-center mt-4 bg-blue-600 text-white px-4 py-3 rounded-md text-sm font-medium"
-                >
-                  Get Started
-                </a>
               </div>
             </motion.div>
           )}
@@ -172,10 +162,9 @@ export function AppLayout() {
             <div>
               <h4 className="text-white font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2">
-                <li><a href="/#services" className="hover:text-blue-400 transition-colors">Services</a></li>
-                <li><a href="/#pricing" className="hover:text-blue-400 transition-colors">Pricing</a></li>
-                <li><a href="/#portfolio" className="hover:text-blue-400 transition-colors">Portfolio</a></li>
-                <li><a href="/#contact" className="hover:text-blue-400 transition-colors">Contact</a></li>
+                <li><Link to="/" className="hover:text-blue-400 transition-colors">Home</Link></li>
+                <li><Link to="/our-work" className="hover:text-blue-400 transition-colors">Our Work</Link></li>
+                <li><Link to="/contact" className="hover:text-blue-400 transition-colors">Contact</Link></li>
               </ul>
             </div>
           </div>
@@ -202,100 +191,14 @@ export function AppLayout() {
 }
 
 export function AppHome() {
-  const [formStatus, setFormStatus] = useState<'idle' | 'submitted'>('idle');
-  const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
-
-  const openWhatsApp = (text: string) => {
-    const encodedText = encodeURIComponent(text);
-    const phoneNumber = "918305500767";
-    
-    // Check if user is on a mobile device
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-      // Use native app URI for mobile
-      window.open(`whatsapp://send?phone=${phoneNumber}&text=${encodedText}`, '_blank');
-    } else {
-      // Use WhatsApp Web for desktop to avoid download prompts
-      window.open(`https://web.whatsapp.com/send?phone=${phoneNumber}&text=${encodedText}`, '_blank');
-    }
-  };
+  const navigate = useNavigate();
 
   const handleBuyPlanMessage = async (planName: string, priceAmount: number) => {
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
-      
-      // Pre-fill the service dropdown
-      const serviceSelect = document.getElementById('service') as HTMLSelectElement;
-      if (serviceSelect) {
-        const options = Array.from(serviceSelect.options);
-        const match = options.find(opt => opt.text.includes(planName));
-        if (match) {
-          serviceSelect.value = match.value;
-        }
-      }
-      
-      // Pre-fill the message textarea and focus it
-      const messageInput = document.getElementById('message') as HTMLTextAreaElement;
-      if (messageInput) {
-        messageInput.value = `Hi, I am interested in purchasing the ${planName} Plan (₹${priceAmount}). Please provide more details.`;
-        setTimeout(() => messageInput.focus(), 500);
-      }
-    }
+    navigate(`/contact?service=${encodeURIComponent(planName)}&message=${encodeURIComponent(`Hi, I am interested in purchasing the ${planName} Plan (₹${priceAmount}). Please provide more details.`)}`);
   };
 
-  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    const now = Date.now();
-    // Rate limit: 1 submission per 30 seconds
-    if (now - lastSubmitTime < 30000) {
-      alert("Please wait a moment before submitting another inquiry.");
-      return;
-    }
-    
-    const formData = new FormData(e.currentTarget);
-    
-    // Honeypot check for bots
-    const botcheck = formData.get('botcheck');
-    if (botcheck) {
-      // Silently reject if the honeypot field is filled
-      console.warn("Bot detected.");
-      return;
-    }
-    
-    // Basic input sanitization (removing potentially dangerous characters)
-    const sanitize = (str: string) => str.replace(/[<>]/g, '');
-    
-    const name = sanitize(formData.get('name') as string || '');
-    const phone = sanitize(formData.get('phone') as string || '');
-    const service = sanitize(formData.get('service') as string || '');
-    const message = sanitize(formData.get('message') as string || '');
-
-    try {
-      // Save to database
-      await addDoc(collection(db, 'inquiries'), {
-        type: 'contact_form',
-        name,
-        phone,
-        service,
-        message,
-        createdAt: new Date().toISOString(),
-      });
-      
-      // Send to WhatsApp
-      const text = `Hello S-Web Hub!\n\nNew Inquiry from Website:\nName: ${name}\nPhone: ${phone}\nInterested In: ${service}\n\nMessage:\n${message}`;
-      openWhatsApp(text);
-      
-      setLastSubmitTime(now);
-      setFormStatus('submitted');
-      setTimeout(() => setFormStatus('idle'), 3000);
-      e.currentTarget.reset();
-    } catch (error) {
-      console.error("Error saving inquiry:", error);
-      alert("There was an error sending your message. Please try again.");
-    }
+  const handleBookDemo = () => {
+    navigate(`/contact?service=${encodeURIComponent('Custom Requirement')}&message=${encodeURIComponent('Hi S-Web Hub team, I would like to book a free demo to see how your services can help my business.')}`);
   };
 
   return (
@@ -323,7 +226,7 @@ export function AppHome() {
             </motion.span>
             <motion.h1 
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight mb-8 leading-tight"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 tracking-tight mb-8 leading-tight"
             >
               Get Your Business Online in <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-400">24 Hours</span>
             </motion.h1>
@@ -340,8 +243,11 @@ export function AppHome() {
               <motion.a whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} href="#pricing" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
                 View Pricing <ArrowRight size={20} />
               </motion.a>
-              <motion.a whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} href="#portfolio" className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-sm flex items-center justify-center">
-                See Our Work
+              <motion.a whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} href="#benefits" className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-sm flex items-center justify-center">
+                Benefits
+              </motion.a>
+              <motion.a whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} href="#feedback" className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-8 py-4 rounded-full font-semibold text-lg transition-all shadow-sm flex items-center justify-center">
+                Feedback
               </motion.a>
             </motion.div>
           </motion.div>
@@ -378,189 +284,41 @@ export function AppHome() {
       {/* Benefits Section */}
       <section id="benefits" className="py-20 bg-slate-900 text-white overflow-hidden relative">
         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://picsum.photos/seed/pattern/1920/1080')] opacity-5 mix-blend-overlay" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <FadeIn>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Why Choose S-Web Hub?</h2>
-              <p className="text-lg text-slate-300 mb-8 leading-relaxed">
-                We understand the challenges of small businesses in India. That's why we've streamlined our process to deliver high-quality websites quickly and affordably.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {[
-                  { icon: Zap, title: 'Lightning Fast', desc: 'Optimized for speed to keep visitors engaged.' },
-                  { icon: IndianRupee, title: 'Highly Affordable', desc: 'Premium quality that fits your budget.' },
-                  { icon: Smartphone, title: 'Mobile-Friendly', desc: 'Looks perfect on all devices and screens.' },
-                  { icon: Search, title: 'SEO Optimized', desc: 'Built to help you rank higher on Google.' },
-                ].map((benefit, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400">
-                      <benefit.icon size={24} />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-semibold mb-1">{benefit.title}</h4>
-                      <p className="text-sm text-slate-400">{benefit.desc}</p>
-                    </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center text-center">
+          <FadeIn className="w-full">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Why Choose S-Web Hub?</h2>
+            <p className="text-lg text-slate-300 mb-12 leading-relaxed">
+              We understand the challenges of small businesses in India. That's why we've streamlined our process to deliver high-quality websites quickly and affordably.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left mb-12">
+              {[
+                { icon: Zap, title: 'Lightning Fast', desc: 'Optimized for speed to keep visitors engaged.' },
+                { icon: IndianRupee, title: 'Highly Affordable', desc: 'Premium quality that fits your budget.' },
+                { icon: Smartphone, title: 'Mobile-Friendly', desc: 'Looks perfect on all devices and screens.' },
+                { icon: Search, title: 'SEO Optimized', desc: 'Built to help you rank higher on Google.' },
+              ].map((benefit, index) => (
+                <div key={index} className="flex gap-4 p-6 rounded-2xl bg-white/5 border border-white/10 shadow-lg backdrop-blur-sm hover:bg-white/10 transition-colors">
+                  <div className="flex-shrink-0 w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400">
+                    <benefit.icon size={24} />
                   </div>
-                ))}
-              </div>
-            </FadeIn>
-            <FadeIn delay={0.2} className="relative">
-              <div className="aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-slate-700 bg-white">
-                <img 
-                  src="https://www.digitalpiloto.com/web-development-company-in-india/images/best-web-development-company-in-india.webp" 
-                  alt="Web Development Process" 
-                  className="w-full h-full object-contain"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">No hidden fees. Choose the perfect plan for your business needs.</p>
-          </FadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Starter Plan */}
-            <FadeIn delay={0.1}>
-              <motion.div whileHover={{ y: -8 }} className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all h-full flex flex-col">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Starter</h3>
-                <p className="text-slate-500 text-sm mb-6">Perfect for small local businesses.</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-extrabold text-slate-900">₹2,499</span>
+                  <div>
+                    <h4 className="text-lg font-semibold mb-1">{benefit.title}</h4>
+                    <p className="text-sm text-slate-400">{benefit.desc}</p>
+                  </div>
                 </div>
-                <ul className="space-y-4 mb-8 flex-grow">
-                  {['Single Page Website', 'Mobile Responsive', 'Contact Form', 'WhatsApp Integration', 'Basic SEO Setup', 'Free Chatbot for 24x7 Interaction'].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3 text-slate-700">
-                      <CheckCircle2 size={20} className="text-blue-500 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button 
-                  onClick={() => handleBuyPlanMessage('Starter', 2499)}
-                  className="w-full block text-center bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold py-3 rounded-xl transition-colors"
-                >
-                  Buy Starter Plan
-                </button>
-                <a href="#example-starter" className="block text-center text-blue-600 font-semibold mt-4 hover:underline text-sm">
-                  View Example Website
-                </a>
-              </motion.div>
-            </FadeIn>
-
-            {/* Growth Plan */}
-            <FadeIn delay={0.2}>
-              <motion.div whileHover={{ y: -8 }} className="bg-blue-600 rounded-3xl p-8 border border-blue-500 shadow-2xl shadow-blue-600/20 transform md:-translate-y-4 hover:-translate-y-6 transition-all h-full flex flex-col relative">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-400 to-blue-300 text-blue-900 text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
-                  Most Popular
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Growth</h3>
-                <p className="text-blue-100 text-sm mb-6">Ideal for growing companies.</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-extrabold text-white">₹4,999</span>
-                </div>
-                <ul className="space-y-4 mb-8 flex-grow">
-                  {['Up to 5 Pages', 'Premium Design', 'Mobile Responsive', 'Advanced SEO Setup', 'Social Media Integration', '1 Month Free Support', 'Free Chatbot for 24x7 Interaction'].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3 text-white">
-                      <CheckCircle2 size={20} className="text-blue-300 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button 
-                  onClick={() => handleBuyPlanMessage('Growth', 4999)}
-                  className="w-full block text-center bg-white hover:bg-blue-50 text-blue-600 font-bold py-3 rounded-xl transition-colors shadow-md"
-                >
-                  Buy Growth Plan
-                </button>
-                <a href="#example-growth" className="block text-center text-blue-200 font-semibold mt-4 hover:text-white hover:underline text-sm">
-                  View Example Website
-                </a>
-              </motion.div>
-            </FadeIn>
-
-            {/* Premium Plan */}
-            <FadeIn delay={0.3}>
-              <motion.div whileHover={{ y: -8 }} className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all h-full flex flex-col">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Premium</h3>
-                <p className="text-slate-500 text-sm mb-6">For established businesses needing more.</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-extrabold text-slate-900">₹9,999</span>
-                </div>
-                <ul className="space-y-4 mb-8 flex-grow">
-                  {['Up to 15 Pages', 'Custom Animations', 'Admin Dashboard', 'Content Management', 'Advanced Analytics', '3 Months Free Support', 'Free Chatbot for 24x7 Interaction'].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3 text-slate-700">
-                      <CheckCircle2 size={20} className="text-blue-500 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button 
-                  onClick={() => handleBuyPlanMessage('Premium', 9999)}
-                  className="w-full block text-center bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold py-3 rounded-xl transition-colors"
-                >
-                  Buy Premium Plan
-                </button>
-                <a href="#example-premium" className="block text-center text-blue-600 font-semibold mt-4 hover:underline text-sm">
-                  View Example Website
-                </a>
-              </motion.div>
-            </FadeIn>
-          </div>
-        </div>
-      </section>
-
-      {/* Portfolio Section */}
-      <section id="portfolio" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeIn className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Recent Projects</h2>
-              <p className="text-lg text-slate-600 max-w-2xl">Take a look at some of the stunning websites we've built for our clients.</p>
+              ))}
             </div>
-            <a href="#contact" className="text-blue-600 font-semibold hover:text-blue-700 flex items-center gap-2">
-              Start Your Project <ArrowRight size={20} />
-            </a>
+            
+            <div className="flex justify-center mt-10">
+              <button
+                onClick={handleBookDemo}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-3 group w-full sm:w-auto"
+              >
+                <Monitor className="group-hover:scale-110 transition-transform" />
+                Book a Free Demo
+              </button>
+            </div>
           </FadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { id: 'example-starter', img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&q=80&w=600&h=450', title: 'The Grand Dhaba', category: 'Starter Plan Example', link: 'https://example-granddhaba.netlify.app/' },
-              { id: 'example-growth', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600&h=450', title: 'Wellness Gym', category: 'Growth Plan Example', link: 'https://example-wellnessgym.netlify.app/' },
-              { id: 'example-premium', img: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=600&h=450', title: 'S Jewellry', category: 'Premium Plan Example', link: 'https://example-sjewelers.netlify.app/' },
-              { id: 'example-restaurant', img: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=600&h=450', title: 'Fine Dining Restaurant', category: 'Restaurant Website Example', link: 'https://example-masalaandco.netlify.app/' },
-              { id: 'example-clinic', img: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600&h=450', title: 'HealthFirst Clinic', category: 'Doctor Clinic Example', link: 'https://example-aura-clinic.netlify.app/' },
-            ].map((item, index) => (
-              <FadeIn key={index} delay={index * 0.1}>
-                <a id={item.id} href={item.link} target="_blank" rel="noopener noreferrer" className="group rounded-2xl overflow-hidden cursor-pointer block scroll-mt-24">
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <img 
-                      src={item.img} 
-                      alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg font-bold text-sm border border-slate-700 shadow-lg z-10">
-                      {item.category}
-                    </div>
-                    <div className="absolute top-4 right-4 bg-blue-600/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full font-bold text-xs shadow-lg z-10 flex items-center gap-1 animate-pulse">
-                      Tap it <MousePointerClick size={14} />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                      <h3 className="text-white font-bold text-xl">{item.title}</h3>
-                    </div>
-                  </div>
-                </a>
-              </FadeIn>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -596,161 +354,106 @@ export function AppHome() {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-20 bg-white">
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
-            <div className="grid grid-cols-1 lg:grid-cols-2">
-              {/* Contact Info */}
-              <div className="p-10 md:p-16 bg-blue-600 text-white flex flex-col justify-between">
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to get started?</h2>
-                  <p className="text-blue-100 text-lg mb-10">
-                    Fill out the form or reach out to us directly on WhatsApp. We'll get back to you within 2 hours.
-                  </p>
-                  
-                  <div className="space-y-6 mb-12">
-                    <a 
-                      href="tel:+918305500767" 
-                      className="flex items-center gap-4 hover:opacity-80 transition-opacity"
-                    >
-                      <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Phone size={24} />
-                      </div>
-                      <div>
-                        <p className="text-blue-200 text-sm">Call us</p>
-                        <p className="font-semibold text-lg">+91 83055 00767</p>
-                      </div>
-                    </a>
-                    <a 
-                      href="https://mail.google.com/mail/?view=cm&fs=1&to=webhub2811@gmail.com" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-4 hover:opacity-80 transition-opacity"
-                    >
-                      <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Mail size={24} />
-                      </div>
-                      <div>
-                        <p className="text-blue-200 text-sm">Email us</p>
-                        <p className="font-semibold text-lg">webhub2811@gmail.com</p>
-                      </div>
-                    </a>
-                    <a 
-                      href="https://www.instagram.com/webhub2811/?hl=en" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-4 hover:opacity-80 transition-opacity"
-                    >
-                      <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Instagram size={24} />
-                      </div>
-                      <div>
-                        <p className="text-blue-200 text-sm">Follow us</p>
-                        <p className="font-semibold text-lg">@webhub2811</p>
-                      </div>
-                    </a>
-                  </div>
+          <FadeIn className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Simple, Transparent Pricing</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">No hidden fees. Choose the perfect plan for your business needs.</p>
+          </FadeIn>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Starter Plan */}
+            <FadeIn delay={0.1}>
+              <motion.div whileHover={{ y: -8 }} className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all h-full flex flex-col">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Starter</h3>
+                <p className="text-slate-500 text-sm mb-6">Perfect for small local businesses.</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-extrabold text-slate-900">₹2,499</span>
                 </div>
+                <ul className="space-y-4 mb-8 flex-grow">
+                  {['Single Page Website', 'Mobile Responsive', 'Contact Form', 'WhatsApp Integration', 'Basic SEO Setup', 'Free Chatbot for 24x7 Interaction'].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3 text-slate-700">
+                      <CheckCircle2 size={20} className="text-blue-500 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button 
+                  onClick={() => handleBuyPlanMessage('Starter', 2499)}
+                  className="w-full block text-center bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold py-3 rounded-xl transition-colors"
+                >
+                  Buy Starter Plan
+                </button>
+                <Link to="/our-work" className="block text-center text-blue-600 font-semibold mt-4 hover:underline text-sm">
+                  View Example Website
+                </Link>
+              </motion.div>
+            </FadeIn>
 
-                <div>
-                  <motion.a 
-                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                    href="https://wa.me/918305500767?text=Hi%20S-Web%20Hub,%20I%20need%20a%20website!" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg"
-                  >
-                    <MessageCircle size={24} />
-                    Chat on WhatsApp
-                  </motion.a>
+            {/* Growth Plan */}
+            <FadeIn delay={0.2}>
+              <motion.div whileHover={{ y: -8 }} className="bg-blue-600 rounded-3xl p-8 border border-blue-500 shadow-2xl shadow-blue-600/20 transform md:-translate-y-4 hover:-translate-y-6 transition-all h-full flex flex-col relative">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-400 to-blue-300 text-blue-900 text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+                  Most Popular
                 </div>
-              </div>
+                <h3 className="text-xl font-bold text-white mb-2">Growth</h3>
+                <p className="text-blue-100 text-sm mb-6">Ideal for growing companies.</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-extrabold text-white">₹4,999</span>
+                </div>
+                <ul className="space-y-4 mb-8 flex-grow">
+                  {['Up to 5 Pages', 'Premium Design', 'Mobile Responsive', 'Advanced SEO Setup', 'Social Media Integration', '1 Month Free Support', 'Free Chatbot for 24x7 Interaction'].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3 text-white">
+                      <CheckCircle2 size={20} className="text-blue-300 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button 
+                  onClick={() => handleBuyPlanMessage('Growth', 4999)}
+                  className="w-full block text-center bg-white hover:bg-blue-50 text-blue-600 font-bold py-3 rounded-xl transition-colors shadow-md"
+                >
+                  Buy Growth Plan
+                </button>
+                <Link to="/our-work" className="block text-center text-blue-200 font-semibold mt-4 hover:text-white hover:underline text-sm">
+                  View Example Website
+                </Link>
+              </motion.div>
+            </FadeIn>
 
-              {/* Contact Form */}
-              <div className="p-10 md:p-16 bg-slate-50">
-                <h3 className="text-2xl font-bold text-slate-900 mb-8">Send us a message</h3>
-                
-                {formStatus === 'submitted' ? (
-                  <div className="bg-green-50 border border-green-200 text-green-700 p-6 rounded-xl flex items-center gap-4">
-                    <CheckCircle2 size={32} className="text-green-500" />
-                    <div>
-                      <h4 className="font-bold text-lg">Message Sent!</h4>
-                      <p>We'll get back to you shortly.</p>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleFormSubmit} className="space-y-6">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
-                      <input 
-                        type="text" 
-                        id="name" 
-                        name="name"
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white"
-                        placeholder="John Doe"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
-                      <input 
-                        type="tel" 
-                        id="phone" 
-                        name="phone"
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white"
-                        placeholder="+91 98765 43210"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="service" className="block text-sm font-medium text-slate-700 mb-2">Interested In</label>
-                      <select 
-                        id="service" 
-                        name="service"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white"
-                      >
-                        <option>Starter Plan (₹2,499)</option>
-                        <option>Growth Plan (₹4,999)</option>
-                        <option>Premium Plan (₹9,999)</option>
-                        <option>Custom Requirement</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-slate-700 mb-2">Message</label>
-                      <textarea 
-                        id="message" 
-                        name="message"
-                        rows={4}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white resize-none"
-                        placeholder="Tell us about your business..."
-                      ></textarea>
-                    </div>
-                    
-                    {/* Honeypot field - hidden from real users, bots will fill it */}
-                    <input 
-                      type="text" 
-                      name="botcheck" 
-                      className="hidden" 
-                      style={{ display: 'none' }} 
-                      tabIndex={-1} 
-                      autoComplete="off" 
-                    />
-
-                    <button 
-                      type="submit"
-                      className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl transition-colors shadow-md"
-                    >
-                      Send Message
-                    </button>
-                  </form>
-                )}
-              </div>
-            </div>
+            {/* Premium Plan */}
+            <FadeIn delay={0.3}>
+              <motion.div whileHover={{ y: -8 }} className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all h-full flex flex-col">
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Premium</h3>
+                <p className="text-slate-500 text-sm mb-6">For established businesses needing more.</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-extrabold text-slate-900">₹9,999</span>
+                </div>
+                <ul className="space-y-4 mb-8 flex-grow">
+                  {['Up to 15 Pages', 'Custom Animations', 'Admin Dashboard', 'Content Management', 'Advanced Analytics', '3 Months Free Support', 'Free Chatbot for 24x7 Interaction'].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3 text-slate-700">
+                      <CheckCircle2 size={20} className="text-blue-500 flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button 
+                  onClick={() => handleBuyPlanMessage('Premium', 9999)}
+                  className="w-full block text-center bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold py-3 rounded-xl transition-colors"
+                >
+                  Buy Premium Plan
+                </button>
+                <Link to="/our-work" className="block text-center text-blue-600 font-semibold mt-4 hover:underline text-sm">
+                  View Example Website
+                </Link>
+              </motion.div>
+            </FadeIn>
           </div>
         </div>
       </section>
+
+      <FeedbackSection />
     </>
   );
 }

@@ -17,62 +17,32 @@ type Message = {
   sender: 'user' | 'bot';
 };
 
-type AiMode = 'general' | 'search' | 'thinking' | 'fast';
-
 const SYSTEM_INSTRUCTION = "You are a helpful customer support assistant for S-Web Hub, a web development agency in India. You build affordable, fast, and modern websites for small businesses. Prices: Starter (₹2499), Growth (₹4999), Premium (₹9999). Contact: WhatsApp +918305500767, Email webhub2811@gmail.com. Be concise, friendly, and helpful. Keep responses relatively short and conversational.";
 
 export function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', text: 'Hi there! I am the S-Web Hub assistant. How can I help you today?', sender: 'bot' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<AiMode>('general');
   const chatRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const modeConfigs: Record<AiMode, { name: string, icon: any, desc: string }> = {
-    general: { name: 'Gemini Intelligence', icon: Sparkles, desc: 'Balanced intelligence using Flash' },
-    search: { name: 'Google Search Data', icon: Globe, desc: 'Real-time ground info using Search' },
-    thinking: { name: 'High Thinking', icon: BrainCircuit, desc: 'Deep reasoning using Pro' },
-    fast: { name: 'Low Latency', icon: Zap, desc: 'Ultra-fast responses using Lite' }
-  };
-
-  const initializeChat = (selectedMode: AiMode) => {
+  const initializeChat = () => {
     if (!ai) return;
     
-    const config: any = {
-      systemInstruction: SYSTEM_INSTRUCTION,
-    };
-    let modelName = "gemini-3-flash-preview";
-
-    if (selectedMode === 'search') {
-      config.tools = [{ googleSearch: {} }];
-    } else if (selectedMode === 'thinking') {
-      modelName = "gemini-3.1-pro-preview";
-      config.thinkingConfig = { thinkingLevel: ThinkingLevel.HIGH };
-    } else if (selectedMode === 'fast') {
-      modelName = "gemini-3.1-flash-lite-preview";
-    }
-
     chatRef.current = ai.chats.create({
-      model: modelName,
-      config: config
+      model: "gemini-3-flash-preview",
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+      }
     });
   };
 
   useEffect(() => {
-    initializeChat(mode);
+    initializeChat();
   }, []);
-
-  const handleModeChange = (newMode: AiMode) => {
-    setMode(newMode);
-    initializeChat(newMode);
-    // Add a system boundary message
-    setMessages(prev => [...prev, { id: Date.now().toString(), text: `Switched to ${modeConfigs[newMode].name} mode.`, sender: 'bot' }]);
-  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -126,53 +96,7 @@ export function ChatBot() {
             </button>
           </div>
           
-          {/* Mode Selector */}
-          <div className="bg-slate-100 p-2 border-b border-slate-200 grid grid-cols-4 gap-1.5 z-10 shrink-0">
-            {(Object.keys(modeConfigs) as AiMode[]).map((m) => {
-              const MIcon = modeConfigs[m].icon;
-              return (
-                <button
-                  key={m}
-                  onClick={() => handleModeChange(m)}
-                  title={modeConfigs[m].desc}
-                  className={`flex flex-col items-center justify-center p-1.5 rounded-lg border text-xs transition-colors ${mode === m ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
-                >
-                  <MIcon size={16} className="mb-0.5" />
-                  <span className="text-[10px] whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
-                    {m === 'general' ? 'Gemini' : m === 'thinking' ? 'Pro Think' : m === 'search' ? 'Search' : 'Fast'}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
           <div className="flex-1 overflow-y-auto p-4 space-y-4 relative bg-slate-50">
-            {showTutorial && (
-              <div className="absolute inset-0 z-20 bg-slate-50/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center">
-                <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-200 w-full">
-                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles size={24} />
-                  </div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-2">Power of Gemini</h4>
-                  <p className="text-sm text-slate-600 mb-4 text-left">
-                    Use the buttons above to toggle different Gemini models:
-                  </p>
-                  <ul className="text-xs text-slate-600 mb-6 text-left space-y-2">
-                    <li className="flex items-center gap-2"><Sparkles size={14} className="text-blue-500" /> <b>Gemini</b> - Standard intelligence</li>
-                    <li className="flex items-center gap-2"><Globe size={14} className="text-blue-500" /> <b>Search</b> - Real-time Google info</li>
-                    <li className="flex items-center gap-2"><BrainCircuit size={14} className="text-blue-500" /> <b>Thinking</b> - Complex reasoning</li>
-                    <li className="flex items-center gap-2"><Zap size={14} className="text-blue-500" /> <b>Fast</b> - Low-latency mode</li>
-                  </ul>
-                  <button 
-                    onClick={() => setShowTutorial(false)}
-                    className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
-                  >
-                    Got it, let's chat!
-                  </button>
-                </div>
-              </div>
-            )}
-
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] p-3 rounded-2xl ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-800 border border-slate-200 rounded-tl-none shadow-sm flex flex-col'}`}>
@@ -184,9 +108,7 @@ export function ChatBot() {
               <div className="flex justify-start">
                 <div className="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none shadow-sm flex gap-2 items-center text-sm text-slate-500">
                   <Loader2 size={16} className="animate-spin text-blue-600" />
-                  {mode === 'search' && "Searching web..."}
-                  {mode === 'thinking' && "Thinking deeply..."}
-                  {mode === 'fast' && "Quickly generating..."}
+                  Generating response...
                 </div>
               </div>
             )}
